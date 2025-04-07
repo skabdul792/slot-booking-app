@@ -1,47 +1,309 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Lab Slot Booking</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
-    form { display: grid; gap: 10px; }
-    input, select, button { padding: 10px; }
-    #message { margin-top: 20px; color: green; }
-    .error { color: red; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f0f2f5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #2c3e50;
+    }
+
+    .dashboard {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      flex: 1 1 45%;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      background: #3498db;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #2980b9;
+    }
+
+    .slot-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .slot {
+      padding: 10px;
+      border: 1px solid #3498db;
+      border-radius: 5px;
+      cursor: pointer;
+      flex: 1 1 30%;
+      text-align: center;
+      background: #ecf6fb;
+    }
+
+    .slot.booked {
+      background: #f8d7da;
+      border-color: #dc3545;
+      cursor: not-allowed;
+      color: #721c24;
+    }
+
+    .slot.selected {
+      background: #3498db;
+      color: white;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+
+    th {
+      background: #3498db;
+      color: white;
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard {
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>Book a Lab Slot</h1>
-  <form id="bookingForm">
-    <input type="text" id="studentName" placeholder="Your Name" required>
-    <select id="course" required>
-      <option value="">Select Course</option>
-      <option value="Python">Python</option>
-      <option value="Java">Java</option>
-      <option value="Oracle">Oracle</option>
-    </select>
-    <select id="system" required>
-      <option value="">Select System</option>
-      <option value="System1">System 1</option>
-      <option value="System2">System 2</option>
-      <option value="System3">System 3</option>
-    </select>
-    <input type="date" id="date" required>
-    <select id="timeSlot" required>
-      <option value="">Select Time Slot</option>
-      <option value="10:00-11:00">10:00 AM - 11:00 AM</option>
-      <option value="11:00-12:00">11:00 AM - 12:00 PM</option>
-      <option value="14:00-15:00">2:00 PM - 3:00 PM</option>
-    </select>
-    <button type="submit">Book Slot</button>
-  </form>
-  <div id="message"></div>
+  <div class="container">
+    <h1>Lab Slot Booking</h1>
+    <div class="dashboard">
+      <div class="card">
+        <h2>Book a Slot</h2>
+        <form id="bookingForm">
+          <label>Name</label>
+          <input type="text" id="studentName" required />
+
+          <label>Course</label>
+          <select id="course" required>
+            <option value="">-- Select --</option>
+            <option value="Python">Python</option>
+            <option value="Java">Java</option>
+            <option value="Oracle">Oracle</option>
+          </select>
+
+          <label>System</label>
+          <select id="system" required>
+            <option value="">-- Select --</option>
+            <option value="System1">System 1</option>
+            <option value="System2">System 2</option>
+            <option value="System3">System 3</option>
+          </select>
+
+          <label>Date</label>
+          <input type="date" id="date" required />
+
+          <label>Start Time</label>
+          <input type="time" id="startTime" required />
+
+          <label>End Time</label>
+          <input type="time" id="endTime" required />
+
+          <button type="submit">Book Slot</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Current Bookings</h2>
+        <div class="filters">
+          <select id="filterCourse">
+            <option value="">All Courses</option>
+            <option value="Python">Python</option>
+            <option value="Java">Java</option>
+            <option value="Oracle">Oracle</option>
+          </select>
+
+          <input type="date" id="filterDate" />
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Course</th>
+              <th>System</th>
+              <th>Date</th>
+              <th>Start</th>
+              <th>End</th>
+            </tr>
+          </thead>
+          <tbody id="bookingTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-  
-  <!-- Your custom JS -->
-  <script src="app.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBpq7uDT3HqDiIenBadVa3zeVJv7TYgqIM",
+      authDomain: "slotbooking-18095.firebaseapp.com",
+      databaseURL: "https://slotbooking-18095-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "slotbooking-18095",
+      storageBucket: "slotbooking-18095.appspot.com",
+      messagingSenderId: "181542449501",
+      appId: "1:181542449501:web:53a6bb98e219a636e378b4",
+      measurementId: "G-5QCJG9CPV3"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database().ref("bookings");
+
+    const form = document.getElementById("bookingForm");
+    const bookingTable = document.getElementById("bookingTable");
+    const filterCourse = document.getElementById("filterCourse");
+    const filterDate = document.getElementById("filterDate");
+
+    function timeToMinutes(t) {
+      const [h, m] = t.split(":");
+      return parseInt(h) * 60 + parseInt(m);
+    }
+
+    function checkConflict(existing, newBooking) {
+      const newStart = timeToMinutes(newBooking.startTime);
+      const newEnd = timeToMinutes(newBooking.endTime);
+
+      return existing.some(b => {
+        if (b.date !== newBooking.date) return false;
+
+        const bStart = timeToMinutes(b.startTime);
+        const bEnd = timeToMinutes(b.endTime);
+
+        // Block same system at overlapping time
+        if (b.system === newBooking.system &&
+          ((newStart >= bStart && newStart < bEnd) || (newEnd > bStart && newEnd <= bEnd) || (newStart <= bStart && newEnd >= bEnd))
+        ) return true;
+
+        // Block same course at overlapping time (on any system)
+        if (b.course === newBooking.course &&
+          ((newStart >= bStart && newStart < bEnd) || (newEnd > bStart && newEnd <= bEnd) || (newStart <= bStart && newEnd >= bEnd))
+        ) return true;
+
+        return false;
+      });
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const studentName = document.getElementById("studentName").value;
+      const course = document.getElementById("course").value;
+      const system = document.getElementById("system").value;
+      const date = document.getElementById("date").value;
+      const startTime = document.getElementById("startTime").value;
+      const endTime = document.getElementById("endTime").value;
+
+      const newBooking = { studentName, course, system, date, startTime, endTime };
+
+      db.once("value", (snapshot) => {
+        const bookings = [];
+        snapshot.forEach(child => bookings.push(child.val()));
+
+        if (checkConflict(bookings, newBooking)) {
+          alert("Conflict detected: either system or course is already booked at this time.");
+          return;
+        }
+
+        db.push(newBooking);
+        alert("Booking successful!");
+        form.reset();
+        loadBookings();
+      });
+    });
+
+    function loadBookings() {
+      db.on("value", (snapshot) => {
+        const bookings = [];
+        snapshot.forEach(child => bookings.push(child.val()));
+        renderBookings(bookings);
+      });
+    }
+
+    function renderBookings(bookings) {
+      bookingTable.innerHTML = "";
+      const courseFilter = filterCourse.value;
+      const dateFilter = filterDate.value;
+
+      bookings
+        .filter(b => (!courseFilter || b.course === courseFilter) &&
+                     (!dateFilter || b.date === dateFilter))
+        .forEach(b => {
+          bookingTable.innerHTML += `
+            <tr>
+              <td>${b.studentName}</td>
+              <td>${b.course}</td>
+              <td>${b.system}</td>
+              <td>${b.date}</td>
+              <td>${b.startTime}</td>
+              <td>${b.endTime}</td>
+            </tr>`;
+        });
+    }
+
+    filterCourse.addEventListener("change", loadBookings);
+    filterDate.addEventListener("change", loadBookings);
+
+    loadBookings();
+  </script>
 </body>
 </html>
