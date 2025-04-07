@@ -11,25 +11,21 @@
       padding: 0;
       background: #f0f2f5;
     }
-
     .container {
       max-width: 1200px;
       margin: auto;
       padding: 20px;
     }
-
     h1 {
       text-align: center;
       margin-bottom: 30px;
       color: #2c3e50;
     }
-
     .dashboard {
       display: flex;
       gap: 20px;
       flex-wrap: wrap;
     }
-
     .card {
       background: white;
       padding: 25px;
@@ -37,13 +33,11 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       flex: 1 1 45%;
     }
-
     label {
       display: block;
       margin-bottom: 8px;
       font-weight: 600;
     }
-
     input, select, button {
       width: 100%;
       padding: 10px;
@@ -52,7 +46,6 @@
       border: 1px solid #ccc;
       font-size: 16px;
     }
-
     button {
       background: #3498db;
       color: white;
@@ -60,63 +53,38 @@
       cursor: pointer;
       transition: 0.3s;
     }
-
     button:hover {
       background: #2980b9;
     }
-
-    .slot-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .slot {
-      padding: 10px;
-      border: 1px solid #3498db;
-      border-radius: 5px;
-      cursor: pointer;
-      flex: 1 1 30%;
-      text-align: center;
-      background: #ecf6fb;
-    }
-
-    .slot.booked {
-      background: #f8d7da;
-      border-color: #dc3545;
-      cursor: not-allowed;
-      color: #721c24;
-    }
-
-    .slot.selected {
-      background: #3498db;
-      color: white;
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 15px;
     }
-
     th, td {
       padding: 10px;
       border: 1px solid #ddd;
+      text-align: left;
     }
-
     th {
       background: #3498db;
       color: white;
     }
-
     .filters {
       display: flex;
       gap: 10px;
       margin-top: 15px;
     }
-
+    .no-bookings {
+      padding: 20px;
+      text-align: center;
+      color: #666;
+    }
     @media (max-width: 768px) {
       .dashboard {
+        flex-direction: column;
+      }
+      .filters {
         flex-direction: column;
       }
     }
@@ -138,6 +106,8 @@
             <option value="Python">Python</option>
             <option value="Java">Java</option>
             <option value="Oracle">Oracle</option>
+            <option value="Testing">Testing</option>
+            <option value="DevOps">DevOps</option>
           </select>
 
           <label>System</label>
@@ -169,9 +139,11 @@
             <option value="Python">Python</option>
             <option value="Java">Java</option>
             <option value="Oracle">Oracle</option>
+            <option value="Testing">Testing</option>
+            <option value="DevOps">DevOps</option>
           </select>
-
           <input type="date" id="filterDate" />
+          <button type="button" id="resetFilters">Reset</button>
         </div>
         <table>
           <thead>
@@ -184,7 +156,11 @@
               <th>End</th>
             </tr>
           </thead>
-          <tbody id="bookingTable"></tbody>
+          <tbody id="bookingTable">
+            <tr>
+              <td colspan="6" class="no-bookings">No bookings found</td>
+            </tr>
+          </tbody>
         </table>
       </div>
     </div>
@@ -195,6 +171,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
   <script>
+    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBpq7uDT3HqDiIenBadVa3zeVJv7TYgqIM",
       authDomain: "slotbooking-18095.firebaseapp.com",
@@ -206,19 +183,25 @@
       measurementId: "G-5QCJG9CPV3"
     };
 
+    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database().ref("bookings");
 
+    // DOM Elements
     const form = document.getElementById("bookingForm");
     const bookingTable = document.getElementById("bookingTable");
     const filterCourse = document.getElementById("filterCourse");
     const filterDate = document.getElementById("filterDate");
+    const resetFilters = document.getElementById("resetFilters");
 
+    // Convert time to minutes for comparison
     function timeToMinutes(t) {
+      if (!t) return 0;
       const [h, m] = t.split(":");
       return parseInt(h) * 60 + parseInt(m);
     }
 
+    // Check for booking conflicts
     function checkConflict(existing, newBooking) {
       const newStart = timeToMinutes(newBooking.startTime);
       const newEnd = timeToMinutes(newBooking.endTime);
@@ -229,20 +212,25 @@
         const bStart = timeToMinutes(b.startTime);
         const bEnd = timeToMinutes(b.endTime);
 
-        // Block same system at overlapping time
+        // Check system conflict
         if (b.system === newBooking.system &&
-          ((newStart >= bStart && newStart < bEnd) || (newEnd > bStart && newEnd <= bEnd) || (newStart <= bStart && newEnd >= bEnd))
+          ((newStart >= bStart && newStart < bEnd) || 
+           (newEnd > bStart && newEnd <= bEnd) || 
+           (newStart <= bStart && newEnd >= bEnd))
         ) return true;
 
-        // Block same course at overlapping time (on any system)
+        // Check course conflict
         if (b.course === newBooking.course &&
-          ((newStart >= bStart && newStart < bEnd) || (newEnd > bStart && newEnd <= bEnd) || (newStart <= bStart && newEnd >= bEnd))
+          ((newStart >= bStart && newStart < bEnd) || 
+           (newEnd > bStart && newEnd <= bEnd) || 
+           (newStart <= bStart && newEnd >= bEnd))
         ) return true;
 
         return false;
       });
     }
 
+    // Handle form submission
     form.addEventListener("submit", (e) => {
       e.preventDefault();
 
@@ -253,7 +241,21 @@
       const startTime = document.getElementById("startTime").value;
       const endTime = document.getElementById("endTime").value;
 
-      const newBooking = { studentName, course, system, date, startTime, endTime };
+      // Validate end time is after start time
+      if (startTime >= endTime) {
+        alert("End time must be after start time");
+        return;
+      }
+
+      const newBooking = { 
+        studentName, 
+        course, 
+        system, 
+        date, 
+        startTime, 
+        endTime,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      };
 
       db.once("value", (snapshot) => {
         const bookings = [];
@@ -264,45 +266,90 @@
           return;
         }
 
-        db.push(newBooking);
-        alert("Booking successful!");
-        form.reset();
-        loadBookings();
+        db.push(newBooking)
+          .then(() => {
+            alert("Booking successful!");
+            form.reset();
+          })
+          .catch(error => {
+            console.error("Booking failed:", error);
+            alert("Booking failed. Please try again.");
+          });
       });
     });
 
+    // Load and display bookings
     function loadBookings() {
       db.on("value", (snapshot) => {
         const bookings = [];
-        snapshot.forEach(child => bookings.push(child.val()));
+        snapshot.forEach(child => {
+          bookings.push({
+            id: child.key,
+            ...child.val()
+          });
+        });
+        
+        // Sort by date and time (newest first)
+        bookings.sort((a, b) => {
+          if (a.date !== b.date) return a.date > b.date ? -1 : 1;
+          return timeToMinutes(b.startTime) - timeToMinutes(a.startTime);
+        });
+
         renderBookings(bookings);
+      }, (error) => {
+        console.error("Error loading bookings:", error);
+        bookingTable.innerHTML = `
+          <tr>
+            <td colspan="6" class="no-bookings">Error loading bookings</td>
+          </tr>`;
       });
     }
 
+    // Render bookings to table
     function renderBookings(bookings) {
-      bookingTable.innerHTML = "";
       const courseFilter = filterCourse.value;
       const dateFilter = filterDate.value;
 
-      bookings
-        .filter(b => (!courseFilter || b.course === courseFilter) &&
-                     (!dateFilter || b.date === dateFilter))
-        .forEach(b => {
-          bookingTable.innerHTML += `
-            <tr>
-              <td>${b.studentName}</td>
-              <td>${b.course}</td>
-              <td>${b.system}</td>
-              <td>${b.date}</td>
-              <td>${b.startTime}</td>
-              <td>${b.endTime}</td>
-            </tr>`;
-        });
+      const filtered = bookings.filter(b => {
+        const courseMatch = !courseFilter || b.course === courseFilter;
+        const dateMatch = !dateFilter || b.date === dateFilter;
+        return courseMatch && dateMatch;
+      });
+
+      if (filtered.length === 0) {
+        bookingTable.innerHTML = `
+          <tr>
+            <td colspan="6" class="no-bookings">No bookings match your filters</td>
+          </tr>`;
+        return;
+      }
+
+      let html = '';
+      filtered.forEach(b => {
+        html += `
+          <tr>
+            <td>${b.studentName || '-'}</td>
+            <td>${b.course || '-'}</td>
+            <td>${b.system || '-'}</td>
+            <td>${b.date || '-'}</td>
+            <td>${b.startTime || '-'}</td>
+            <td>${b.endTime || '-'}</td>
+          </tr>`;
+      });
+
+      bookingTable.innerHTML = html;
     }
 
+    // Event listeners for filters
     filterCourse.addEventListener("change", loadBookings);
     filterDate.addEventListener("change", loadBookings);
+    resetFilters.addEventListener("click", () => {
+      filterCourse.value = "";
+      filterDate.value = "";
+      loadBookings();
+    });
 
+    // Initial load
     loadBookings();
   </script>
 </body>
