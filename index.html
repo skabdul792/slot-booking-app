@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lab Slot Booking</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+    form { display: grid; gap: 10px; }
+    input, select, button { padding: 10px; }
+    #message { margin-top: 20px; color: green; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <h1>Book a Lab Slot</h1>
+  <form id="bookingForm">
+    <input type="text" id="studentName" placeholder="Your Name" required>
+    <select id="course" required>
+      <option value="">Select Course</option>
+      <option value="Python">Python</option>
+      <option value="Java">Java</option>
+      <option value="Oracle">Oracle</option>
+    </select>
+    <select id="system" required>
+      <option value="">Select System</option>
+      <option value="System1">System 1</option>
+      <option value="System2">System 2</option>
+      <option value="System3">System 3</option>
+    </select>
+    <input type="date" id="date" required>
+    <select id="timeSlot" required>
+      <option value="">Select Time Slot</option>
+      <option value="10:00-11:00">10:00 AM - 11:00 AM</option>
+      <option value="11:00-12:00">11:00 AM - 12:00 PM</option>
+      <option value="14:00-15:00">2:00 PM - 3:00 PM</option>
+    </select>
+    <button type="submit">Book Slot</button>
+  </form>
+  <div id="message"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  
+  <!-- Your custom JS -->
+  <script src="app.js"></script>
+</body>
+</html>
