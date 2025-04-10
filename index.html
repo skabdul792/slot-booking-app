@@ -32,17 +32,18 @@
 
     .card {
       background: white;
-      padding: 25px;
+      padding: 20px;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
     }
 
     .card:first-child {
-      flex: 1 1 35%;
+      flex: 1 1 40%;
     }
 
     .card:last-child {
-      flex: 1 1 60%;
+      flex: 1 1 55%;
     }
 
     label {
@@ -66,6 +67,7 @@
       font-weight: bold;
       cursor: pointer;
       transition: 0.3s;
+      border: none;
     }
 
     button:hover {
@@ -76,13 +78,12 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 15px;
-      font-size: 15px;
     }
 
     th, td {
-      padding: 10px;
+      padding: 12px;
       border: 1px solid #ddd;
-      word-break: keep-all;
+      text-align: center;
       white-space: nowrap;
     }
 
@@ -95,250 +96,485 @@
       display: flex;
       gap: 10px;
       margin-top: 15px;
-      flex-wrap: wrap;
     }
 
-    .filters button {
-      width: auto;
-      padding: 10px 20px;
+    .delete-btn {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .delete-btn:hover {
+      background: #c0392b;
+    }
+
+    .date-range-selector {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 5px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .danger-btn {
+      background: #e74c3c !important;
+    }
+
+    .danger-btn:hover {
+      background: #c0392b !important;
+    }
+
+    #selectionCount {
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border-left-color: #3498db;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     @media (max-width: 768px) {
       .dashboard {
         flex-direction: column;
       }
+      
+      .action-buttons {
+        flex-direction: column;
+      }
+      
+      button {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Lab Slot Booking</h1>
-    <div class="dashboard">
-      <div class="card">
-        <h2>Book a Slot</h2>
-        <form id="bookingForm">
-          <label>Name</label>
-          <input type="text" id="studentName" required />
+<div class="container">
+  <h1>Lab Slot Booking System</h1>
+  <div class="dashboard">
+    <div class="card">
+      <h2>Book a Slot</h2>
+      <form id="bookingForm">
+        <label>Name</label>
+        <input type="text" id="studentName" required />
 
-          <label>Course</label>
-          <select id="course" required>
-            <option value="">-- Select --</option>
-            <option value="Python">Python</option>
-            <option value="Java">Java</option>
-            <option value="Oracle">Oracle</option>
-            <option value="Testing">Testing</option>
-            <option value="DevOps">DevOps</option>
-          </select>
+        <label>Course</label>
+        <select id="course" required>
+          <option value="">-- Select --</option>
+          <option value="Python">Python</option>
+          <option value="Java">Java</option>
+          <option value="Oracle">Oracle</option>
+          <option value="Testing">Testing</option>
+          <option value="DevOps">DevOps</option>
+        </select>
 
-          <label>System</label>
-          <select id="system" required>
-            <option value="">-- Select --</option>
-            <option value="Perambur1">Perambur1</option>
-            <option value="Perambur2">Perambur2</option>
-            <option value="OMR1">OMR1</option>
-          </select>
+        <label>System</label>
+        <select id="system" required>
+          <option value="">-- Select --</option>
+          <option value="Perambur1">Perambur1</option>
+          <option value="Perambur2">Perambur2</option>
+          <option value="OMR1">OMR1</option>
+        </select>
 
-          <label>Date</label>
-          <input type="date" id="date" required />
+        <label>Date</label>
+        <input type="date" id="date" required />
 
-          <label>Start Time</label>
-          <input type="time" id="startTime" required />
+        <label>Start Time</label>
+        <input type="time" id="startTime" required />
 
-          <label>End Time</label>
-          <input type="time" id="endTime" required />
+        <label>End Time</label>
+        <input type="time" id="endTime" required />
 
-          <button type="submit">Book Slot</button>
-        </form>
+        <button type="submit">Book Slot</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Current Bookings</h2>
+      <div class="filters">
+        <select id="filterCourse">
+          <option value="">All Courses</option>
+          <option value="Python">Python</option>
+          <option value="Java">Java</option>
+          <option value="Oracle">Oracle</option>
+          <option value="Testing">Testing</option>
+          <option value="DevOps">DevOps</option>
+        </select>
+
+        <input type="date" id="filterDate" />
       </div>
-
-      <div class="card">
-        <h2>Current Bookings</h2>
-        <div class="filters">
-          <select id="filterCourse">
-            <option value="">All Courses</option>
-            <option value="Python">Python</option>
-            <option value="Java">Java</option>
-            <option value="Oracle">Oracle</option>
-            <option value="Testing">Testing</option>
-            <option value="DevOps">DevOps</option>
-          </select>
-          <input type="date" id="filterDate" />
-          <button id="resetFilters">Reset Filters</button>
+      <table>
+        <thead>
+        <tr>
+          <th>Name</th>
+          <th>Course</th>
+          <th>System</th>
+          <th>Date</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Action</th>
+        </tr>
+        </thead>
+        <tbody id="bookingTable"></tbody>
+      </table>
+    </div>
+    
+    <div class="card">
+      <h2>Manage Old Bookings</h2>
+      <div class="date-range-selector">
+        <label>From Date</label>
+        <input type="date" id="deleteFromDate">
+        
+        <label>To Date</label>
+        <input type="date" id="deleteToDate">
+        
+        <div class="action-buttons">
+          <button id="exportOldBtn">Export Selected</button>
+          <button id="deleteOldBtn" class="danger-btn">Delete Selected</button>
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Course</th>
-              <th>System</th>
-              <th>Date</th>
-              <th>Start</th>
-              <th>End</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="bookingTable"></tbody>
-        </table>
+        <div id="selectionCount">0 bookings selected</div>
+      </div>
+      <div class="loading" id="loadingIndicator">
+        <div class="spinner"></div>
+        <p>Processing...</p>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script>
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyBpq7uDT3HqDiIenBadVa3zeVJv7TYgqIM",
+    authDomain: "slotbooking-18095.firebaseapp.com",
+    databaseURL: "https://slotbooking-18095-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "slotbooking-18095",
+    storageBucket: "slotbooking-18095.appspot.com",
+    messagingSenderId: "181542449501",
+    appId: "1:181542449501:web:53a6bb98e219a636e378b4",
+    measurementId: "G-5QCJG9CPV3"
+  };
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBpq7uDT3HqDiIenBadVa3zeVJv7TYgqIM",
-      authDomain: "slotbooking-18095.firebaseapp.com",
-      databaseURL: "https://slotbooking-18095-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "slotbooking-18095",
-      storageBucket: "slotbooking-18095.appspot.com",
-      messagingSenderId: "181542449501",
-      appId: "1:181542449501:web:53a6bb98e219a636e378b4",
-      measurementId: "G-5QCJG9CPV3"
-    };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database().ref("bookings");
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database().ref("bookings");
+  // DOM elements
+  const form = document.getElementById("bookingForm");
+  const bookingTable = document.getElementById("bookingTable");
+  const filterCourse = document.getElementById("filterCourse");
+  const filterDate = document.getElementById("filterDate");
+  const deleteFromDate = document.getElementById("deleteFromDate");
+  const deleteToDate = document.getElementById("deleteToDate");
+  const exportOldBtn = document.getElementById("exportOldBtn");
+  const deleteOldBtn = document.getElementById("deleteOldBtn");
+  const selectionCount = document.getElementById("selectionCount");
+  const loadingIndicator = document.getElementById("loadingIndicator");
 
-    const form = document.getElementById("bookingForm");
-    const bookingTable = document.getElementById("bookingTable");
-    const filterCourse = document.getElementById("filterCourse");
-    const filterDate = document.getElementById("filterDate");
-    const resetFilters = document.getElementById("resetFilters");
+  // Initialize dates (default to 30 days ago)
+  const today = new Date().toISOString().split('T')[0];
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  deleteFromDate.value = thirtyDaysAgo.toISOString().split('T')[0];
+  deleteToDate.value = today;
 
-    function timeToMinutes(t) {
-      const [h, m] = t.split(":");
-      return parseInt(h) * 60 + parseInt(m);
+  // Helper function to convert time to minutes
+  function timeToMinutes(t) {
+    const [h, m] = t.split(":");
+    return parseInt(h) * 60 + parseInt(m);
+  }
+
+  // Check for booking conflicts
+  function checkConflict(existing, newBooking) {
+    const newStart = timeToMinutes(newBooking.startTime);
+    const newEnd = timeToMinutes(newBooking.endTime);
+
+    for (let b of existing) {
+      if (b.date !== newBooking.date) continue;
+
+      const bStart = timeToMinutes(b.startTime);
+      const bEnd = timeToMinutes(b.endTime);
+
+      const timeOverlap =
+        (newStart >= bStart && newStart < bEnd) ||
+        (newEnd > bStart && newEnd <= bEnd) ||
+        (newStart <= bStart && newEnd >= bEnd);
+
+      if (b.system === newBooking.system && timeOverlap) {
+        return { conflict: true, message: `⚠️ System "${b.system}" is already booked during this time.` };
+      }
+
+      if (b.course === newBooking.course && timeOverlap) {
+        return { conflict: true, message: `⚠️ Course "${b.course}" is already booked during this time on another system.` };
+      }
     }
 
-    function checkConflict(existing, newBooking) {
-      const newStart = timeToMinutes(newBooking.startTime);
-      const newEnd = timeToMinutes(newBooking.endTime);
+    return { conflict: false };
+  }
 
-      return existing.some(b => {
-        if (b.date !== newBooking.date) return false;
+  // Handle new booking submission
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-        const bStart = timeToMinutes(b.startTime);
-        const bEnd = timeToMinutes(b.endTime);
+    const studentName = document.getElementById("studentName").value;
+    const course = document.getElementById("course").value;
+    const system = document.getElementById("system").value;
+    const date = document.getElementById("date").value;
+    const startTime = document.getElementById("startTime").value;
+    const endTime = document.getElementById("endTime").value;
 
-        if (b.system === newBooking.system &&
-            ((newStart >= bStart && newStart < bEnd) ||
-             (newEnd > bStart && newEnd <= bEnd) ||
-             (newStart <= bStart && newEnd >= bEnd))
-        ) return true;
+    // Validate time
+    if (timeToMinutes(endTime) <= timeToMinutes(startTime)) {
+      alert("End Time must be after Start Time.");
+      return;
+    }
 
-        if (b.course === newBooking.course &&
-            ((newStart >= bStart && newStart < bEnd) ||
-             (newEnd > bStart && newEnd <= bEnd) ||
-             (newStart <= bStart && newEnd >= bEnd))
-        ) return true;
+    const newBooking = { studentName, course, system, date, startTime, endTime };
 
-        return false;
+    db.once("value", (snapshot) => {
+      const bookings = [];
+      snapshot.forEach(child => {
+        bookings.push({ id: child.key, ...child.val() });
       });
-    }
 
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      const studentName = document.getElementById("studentName").value;
-      const course = document.getElementById("course").value;
-      const system = document.getElementById("system").value;
-      const date = document.getElementById("date").value;
-      const startTime = document.getElementById("startTime").value;
-      const endTime = document.getElementById("endTime").value;
-
-      // Validate time
-      if (timeToMinutes(endTime) <= timeToMinutes(startTime)) {
-        alert("End Time must be after Start Time.");
+      const result = checkConflict(bookings, newBooking);
+      if (result.conflict) {
+        alert(result.message);
         return;
       }
 
-      const newBooking = { studentName, course, system, date, startTime, endTime };
-
-      db.once("value").then(snapshot => {
-        const bookings = [];
-        snapshot.forEach(child => bookings.push(child.val()));
-
-        if (checkConflict(bookings, newBooking)) {
-          alert("Conflict detected: system or course is already booked at this time.");
-          return;
-        }
-
-        db.push(newBooking);
-        alert("Booking successful!");
-        form.reset();
-        loadBookings();
-      });
-    });
-
-    function deleteBooking(key) {
-      if (confirm("Are you sure you want to delete this booking?")) {
-        db.child(key).remove().then(() => {
-          alert("Booking deleted.");
-          loadBookings();
-        });
-      }
-    }
-
-    function loadBookings() {
-      db.once("value").then(snapshot => {
-        const bookings = [];
-        snapshot.forEach(child => {
-          bookings.push({ ...child.val(), key: child.key });
-        });
-
-        // Sort by date and then by start time
-        bookings.sort((a, b) => {
-          const dateCompare = a.date.localeCompare(b.date);
-          if (dateCompare !== 0) return dateCompare;
-          return a.startTime.localeCompare(b.startTime);
-        });
-
-        renderBookings(bookings);
-      });
-    }
-
-    function renderBookings(bookings) {
-      bookingTable.innerHTML = "";
-      const courseFilter = filterCourse.value;
-      const dateFilter = filterDate.value;
-
-      const filtered = bookings.filter(b => {
-        const matchCourse = !courseFilter || b.course === courseFilter;
-        const matchDate = !dateFilter || b.date === dateFilter;
-        return matchCourse && matchDate;
-      });
-
-      if (filtered.length === 0) {
-        bookingTable.innerHTML = `<tr><td colspan="7" style="text-align:center;">No bookings found.</td></tr>`;
-      } else {
-        filtered.forEach(b => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${b.studentName}</td>
-            <td>${b.course}</td>
-            <td>${b.system}</td>
-            <td>${b.date}</td>
-            <td>${b.startTime}</td>
-            <td>${b.endTime}</td>
-            <td><button onclick="deleteBooking('${b.key}')">Delete</button></td>
-          `;
-          bookingTable.appendChild(row);
-        });
-      }
-    }
-
-    filterCourse.addEventListener("change", loadBookings);
-    filterDate.addEventListener("change", loadBookings);
-    resetFilters.addEventListener("click", () => {
-      filterCourse.value = "";
-      filterDate.value = "";
+      db.push(newBooking);
+      alert("Booking successful!");
+      form.reset();
       loadBookings();
     });
+  });
 
-    loadBookings();
-  </script>
+  // Delete single booking
+  function deleteBooking(id) {
+    if (confirm("Are you sure you want to delete this booking?")) {
+      loadingIndicator.style.display = 'block';
+      db.child(id).remove()
+        .then(() => {
+          alert("Booking deleted successfully!");
+          loadBookings();
+          updateSelectionCount();
+        })
+        .catch((error) => {
+          alert("Error deleting booking: " + error.message);
+        })
+        .finally(() => {
+          loadingIndicator.style.display = 'none';
+        });
+    }
+  }
+
+  // Load all bookings
+  function loadBookings() {
+    loadingIndicator.style.display = 'block';
+    db.once("value").then(snapshot => {
+      const bookings = [];
+      snapshot.forEach(child => {
+        bookings.push({ ...child.val(), key: child.key });
+      });
+
+      // Sort by date and then by start time
+      bookings.sort((a, b) => {
+        const dateCompare = a.date.localeCompare(b.date);
+        if (dateCompare !== 0) return dateCompare;
+        return a.startTime.localeCompare(b.startTime);
+      });
+
+      renderBookings(bookings);
+      updateSelectionCount();
+    }).finally(() => {
+      loadingIndicator.style.display = 'none';
+    });
+  }
+
+  // Render bookings to table
+  function renderBookings(bookings) {
+    bookingTable.innerHTML = "";
+    const courseFilter = filterCourse.value;
+    const dateFilter = filterDate.value;
+
+    const filtered = bookings.filter(b => {
+      const matchCourse = !courseFilter || b.course === courseFilter;
+      const matchDate = !dateFilter || b.date === dateFilter;
+      return matchCourse && matchDate;
+    });
+
+    if (filtered.length === 0) {
+      bookingTable.innerHTML = `<tr><td colspan="7" style="text-align:center;">No bookings found.</td></tr>`;
+    } else {
+      filtered.forEach(b => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${b.studentName}</td>
+          <td>${b.course}</td>
+          <td>${b.system}</td>
+          <td>${b.date}</td>
+          <td>${b.startTime}</td>
+          <td>${b.endTime}</td>
+          <td><button class="delete-btn" onclick="deleteBooking('${b.key}')">Delete</button></td>
+        `;
+        bookingTable.appendChild(row);
+      });
+    }
+  }
+
+  // Update count of bookings in selected date range
+  async function updateSelectionCount() {
+    const fromDate = deleteFromDate.value;
+    const toDate = deleteToDate.value;
+    
+    if (!fromDate || !toDate) {
+      selectionCount.textContent = '0 bookings selected';
+      return;
+    }
+
+    const snapshot = await db.once('value');
+    let count = 0;
+    snapshot.forEach(child => {
+      const booking = child.val();
+      if (booking.date >= fromDate && booking.date <= toDate) {
+        count++;
+      }
+    });
+    
+    selectionCount.textContent = `${count} bookings selected`;
+  }
+
+  // Export bookings to CSV
+  exportOldBtn.addEventListener('click', async () => {
+    const fromDate = deleteFromDate.value;
+    const toDate = deleteToDate.value;
+    
+    if (!fromDate || !toDate) {
+      alert('Please select both dates');
+      return;
+    }
+
+    loadingIndicator.style.display = 'block';
+    
+    try {
+      const snapshot = await db.once('value');
+      let csvContent = "Name,Course,System,Date,Start Time,End Time\n";
+      let count = 0;
+      
+      snapshot.forEach(child => {
+        const booking = child.val();
+        if (booking.date >= fromDate && booking.date <= toDate) {
+          csvContent += `"${booking.studentName}","${booking.course}","${booking.system}","${booking.date}","${booking.startTime}","${booking.endTime}"\n`;
+          count++;
+        }
+      });
+
+      if (count === 0) {
+        alert('No bookings found in selected date range');
+        return;
+      }
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `bookings_${fromDate}_to_${toDate}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      alert('Error exporting data: ' + error.message);
+    } finally {
+      loadingIndicator.style.display = 'none';
+    }
+  });
+
+  // Delete bookings in date range
+  deleteOldBtn.addEventListener('click', async () => {
+    const fromDate = deleteFromDate.value;
+    const toDate = deleteToDate.value;
+    
+    if (!fromDate || !toDate) {
+      alert('Please select both dates');
+      return;
+    }
+
+    loadingIndicator.style.display = 'block';
+    
+    try {
+      const snapshot = await db.once('value');
+      const bookings = [];
+      snapshot.forEach(child => {
+        const booking = child.val();
+        if (booking.date >= fromDate && booking.date <= toDate) {
+          bookings.push({ id: child.key, ...booking });
+        }
+      });
+
+      if (bookings.length === 0) {
+        alert('No bookings found in selected date range');
+        return;
+      }
+
+      if (!confirm(`Are you sure you want to delete ${bookings.length} bookings?\n\nConsider exporting first.`)) {
+        return;
+      }
+
+      // Delete in batches to avoid Firebase timeout
+      const batchSize = 10;
+      for (let i = 0; i < bookings.length; i += batchSize) {
+        const batch = bookings.slice(i, i + batchSize);
+        await Promise.all(batch.map(booking => db.child(booking.id).remove()));
+      }
+
+      alert(`Successfully deleted ${bookings.length} bookings`);
+      loadBookings();
+      updateSelectionCount();
+    } catch (error) {
+      alert('Error deleting bookings: ' + error.message);
+    } finally {
+      loadingIndicator.style.display = 'none';
+    }
+  });
+
+  // Event listeners
+  filterCourse.addEventListener("change", loadBookings);
+  filterDate.addEventListener("change", loadBookings);
+  deleteFromDate.addEventListener('change', updateSelectionCount);
+  deleteToDate.addEventListener('change', updateSelectionCount);
+
+  // Initial load
+  loadBookings();
+  updateSelectionCount();
+</script>
 </body>
 </html>
